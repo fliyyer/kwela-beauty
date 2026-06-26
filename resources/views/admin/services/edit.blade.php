@@ -3,9 +3,15 @@
 @section('title', 'Edit Service - Kwéla Beauty Admin')
 
 @section('content')
-<div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-800">Edit Service</h1>
-    <p class="text-gray-600">Update service information</p>
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">Edit Service</h1>
+        <p class="text-gray-600">Update service information</p>
+    </div>
+    <a href="{{ route('admin.services.index') }}" class="inline-flex items-center gap-2 text-kwela-maroon hover:underline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Back
+    </a>
 </div>
 
 <div class="bg-white rounded-lg shadow-sm p-6">
@@ -73,10 +79,12 @@
         </div>
         
         <div class="mt-8 flex justify-end space-x-4">
-            <a href="{{ route('admin.services.index') }}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('admin.services.index') }}" class="inline-flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 Cancel
             </a>
-            <button type="submit" class="px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+            <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                 Update Service
             </button>
         </div>

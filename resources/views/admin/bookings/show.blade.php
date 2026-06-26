@@ -8,8 +8,9 @@
         <h1 class="text-2xl font-bold text-gray-800">Booking Details</h1>
         <p class="text-gray-600">View booking information</p>
     </div>
-    <a href="{{ route('admin.bookings.index') }}" class="text-kwela-maroon hover:underline">
-        ← Back to Bookings
+    <a href="{{ route('admin.bookings.index') }}" class="inline-flex items-center gap-2 text-kwela-maroon hover:underline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Back to Bookings
     </a>
 </div>
 
@@ -92,7 +93,8 @@
             <option value="completed" {{ $booking->status == 'completed' ? 'selected' : '' }}>Completed</option>
             <option value="cancelled" {{ $booking->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
         </select>
-        <button type="submit" class="px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+        <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
             Update Status
         </button>
     </form>

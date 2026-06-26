@@ -3,9 +3,15 @@
 @section('title', 'Add Service - Kwéla Beauty Admin')
 
 @section('content')
-<div class="mb-8">
-    <h1 class="text-2xl font-bold text-gray-800">Add New Service</h1>
-    <p class="text-gray-600">Create a new beauty service</p>
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">Add New Service</h1>
+        <p class="text-gray-600">Create a new beauty service</p>
+    </div>
+    <a href="{{ route('admin.services.index') }}" class="inline-flex items-center gap-2 text-kwela-maroon hover:underline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        Back
+    </a>
 </div>
 
 <div class="bg-white rounded-lg shadow-sm p-6">
@@ -67,10 +73,12 @@
         </div>
         
         <div class="mt-8 flex justify-end space-x-4">
-            <a href="{{ route('admin.services.index') }}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            <a href="{{ route('admin.services.index') }}" class="inline-flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                 Cancel
             </a>
-            <button type="submit" class="px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+            <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-kwela-maroon text-white rounded-md hover:bg-opacity-90">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 Create Service
             </button>
         </div>
