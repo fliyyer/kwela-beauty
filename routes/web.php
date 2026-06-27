@@ -69,3 +69,27 @@ Route::get('/run-artisan-clear', function () {
         return 'Error: ' . $e->getMessage();
     }
 });
+
+Route::get('/run-artisan-storage-link', function () {
+    try {
+        $link = public_path('storage');
+        $output = '';
+
+        if (file_exists($link) || is_link($link)) {
+            if (is_link($link)) {
+                unlink($link);
+                $output .= "Removed existing symbolic link at $link.<br>";
+            } else {
+                $backup = $link . '_old_' . time();
+                rename($link, $backup);
+                $output .= "Renamed existing physical folder $link to $backup.<br>";
+            }
+        }
+
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        $output .= 'Storage link created successfully!<br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+        return $output;
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
+});
