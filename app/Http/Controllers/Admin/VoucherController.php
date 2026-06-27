@@ -14,7 +14,7 @@ class VoucherController extends Controller
      */
     public function index()
     {
-        $vouchers = Voucher::orderBy('created_at', 'desc')->get();
+        $vouchers = Voucher::orderBy('created_at', 'desc')->paginate(10);
         return view('admin.vouchers.index', compact('vouchers'));
     }
 

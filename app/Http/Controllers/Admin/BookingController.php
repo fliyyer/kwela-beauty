@@ -15,13 +15,28 @@ class BookingController extends Controller
     {
         $query = Booking::with('services');
 
+        $date = $request->input('date');
+
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        $bookings = $query->orderBy('booking_date', 'desc')->orderBy('booking_time', 'desc')->get();
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('customer_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
 
-        return view('admin.bookings.index', compact('bookings'));
+        if ($date) {
+            $query->where('booking_date', $date);
+        }
+
+        $bookings = $query->orderBy('booking_date', 'desc')->orderBy('booking_time', 'desc')->paginate(10)->withQueryString();
+
+        return view('admin.bookings.index', compact('bookings', 'date'));
     }
 
     /**

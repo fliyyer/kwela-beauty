@@ -3,135 +3,211 @@
 @section('title', 'Dashboard - Kwéla Beauty Admin')
 
 @section('content')
-<div class="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div>
-        <p class="text-3xl md:text-4xl font-bold text-stone-900 serif-font">Analisis Dasbor</p>
-        <p class="text-stone-500 text-sm mt-0.5">Selamat datang kembali! Berikut adalah perkembangan di Kwéla Beauty Studio hari ini.</p>
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900">Dashboard</h1>
+        <p class="text-zinc-500 text-sm mt-1">Selamat datang kembali! Berikut adalah perkembangan di Kwéla Beauty Studio hari ini.</p>
     </div>
     
-    <!-- Indikator Status Sistem Langsung -->
-    <div class="flex items-center gap-2.5 bg-emerald-50 border border-emerald-100/80 px-4 py-2 rounded-2xl w-fit self-start sm:self-auto shadow-sm">
-        <span class="relative flex h-2.5 w-2.5">
+    <!-- System Status Badge -->
+    <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full w-fit self-start sm:self-auto shadow-sm">
+        <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Sistem Aktif</span>
+        <span class="text-[10px] font-semibold uppercase tracking-wider text-emerald-800">Sistem Aktif</span>
     </div>
 </div>
 
-<!-- Grid Kartu Statistik -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-    <!-- Total Reservasi -->
-    <div class="bg-white rounded-[2rem] border border-stone-200/50 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-[#5d3a3a]/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-500"></div>
-        <div class="flex items-center justify-between relative z-10">
-            <div>
-                <span class="text-stone-400 text-xs font-bold uppercase tracking-wider block mb-1">Total Reservasi</span>
-                <span class="text-4xl font-extrabold text-[#5d3a3a] tracking-tight leading-none block">{{ $totalBookings }}</span>
-                <span class="text-[10px] text-stone-400 font-medium block mt-2">Semua catatan reservasi</span>
-            </div>
-            <div class="w-12 h-12 bg-[#5d3a3a]/10 text-[#5d3a3a] rounded-2xl flex items-center justify-center shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-            </div>
-        </div>
+<!-- Dashboard Date Filter Form -->
+<form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-wrap items-end gap-3 bg-white border border-zinc-200 p-4 rounded-lg shadow-sm mb-8">
+    <div class="flex flex-col gap-1.5">
+        <label for="date" class="text-xs font-semibold text-zinc-650">Filter Tanggal</label>
+        <input type="date" id="date" name="date" value="{{ $date }}"
+            class="text-xs border border-zinc-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-zinc-950 bg-white text-zinc-950 w-44">
     </div>
 
-    <!-- Reservasi Hari Ini -->
-    <div class="bg-white rounded-[2rem] border border-stone-200/50 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-500"></div>
-        <div class="flex items-center justify-between relative z-10">
+    <div class="flex items-center gap-2">
+        <button type="submit" 
+            class="inline-flex items-center justify-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 px-4 py-1.5 rounded-md font-semibold text-xs shadow-sm transition-colors cursor-pointer h-[32px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filter
+        </button>
+        
+        @if($date)
+            <a href="{{ route('admin.dashboard') }}" 
+                class="inline-flex items-center justify-center px-3 py-1.5 border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 rounded-md text-xs font-semibold transition-colors h-[32px]">
+                Reset
+            </a>
+        @endif
+    </div>
+</form>
+
+<!-- Stats Card Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Bookings -->
+    <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+        <div class="flex items-start justify-between">
             <div>
-                <span class="text-stone-400 text-xs font-bold uppercase tracking-wider block mb-1">Reservasi Hari Ini</span>
-                <span class="text-4xl font-extrabold text-stone-900 tracking-tight leading-none block">{{ $todayBookings }}</span>
-                <span class="text-[10px] text-emerald-600 font-semibold block mt-2">✨ Perlu tindakan hari ini</span>
+                <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Total Reservasi</span>
+                <span class="text-3xl font-bold text-zinc-900 tracking-tight leading-none">{{ $totalBookings }}</span>
             </div>
-            <div class="w-12 h-12 bg-emerald-500/10 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/></svg>
+            <div class="w-10 h-10 bg-zinc-50 text-zinc-500 rounded-lg border border-zinc-200 flex items-center justify-center shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
             </div>
         </div>
+        <div class="text-[11px] text-zinc-400 mt-4 font-medium">Semua catatan reservasi</div>
     </div>
 
-    <!-- Layanan Aktif -->
-    <div class="bg-white rounded-[2rem] border border-stone-200/50 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-500"></div>
-        <div class="flex items-center justify-between relative z-10">
+    <!-- Bookings Today -->
+    <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+        <div class="flex items-start justify-between">
             <div>
-                <span class="text-stone-400 text-xs font-bold uppercase tracking-wider block mb-1">Layanan Aktif</span>
-                <span class="text-4xl font-extrabold text-stone-900 tracking-tight leading-none block">{{ $activeServices }}<span class="text-lg text-stone-400 font-light">/{{ $totalServices }}</span></span>
-                <span class="text-[10px] text-stone-400 font-medium block mt-2">Katalog perawatan aktif online</span>
+                <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Reservasi Hari Ini</span>
+                <span class="text-3xl font-bold text-zinc-900 tracking-tight leading-none">{{ $todayBookings }}</span>
             </div>
-            <div class="w-12 h-12 bg-amber-500/10 text-amber-600 rounded-2xl flex items-center justify-center shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>
+            <div class="w-10 h-10 bg-zinc-50 text-zinc-500 rounded-lg border border-zinc-200 flex items-center justify-center shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
             </div>
         </div>
+        <div class="text-[11px] text-emerald-600 font-semibold mt-4">✨ Perlu tindakan hari ini</div>
     </div>
 
-    <!-- Promosi Aktif -->
-    <div class="bg-white rounded-[2rem] border border-stone-200/50 p-6 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-        <div class="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform duration-500"></div>
-        <div class="flex items-center justify-between relative z-10">
+    <!-- Active Services -->
+    <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+        <div class="flex items-start justify-between">
             <div>
-                <span class="text-stone-400 text-xs font-bold uppercase tracking-wider block mb-1">Promo Aktif</span>
-                <span class="text-4xl font-extrabold text-stone-900 tracking-tight leading-none block">{{ $activePromotions }}<span class="text-lg text-stone-400 font-light">/{{ $totalPromotions }}</span></span>
-                <span class="text-[10px] text-stone-400 font-medium block mt-2">Kampanye musiman aktif</span>
+                <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Layanan Aktif</span>
+                <span class="text-3xl font-bold text-zinc-900 tracking-tight leading-none">{{ $activeServices }}<span class="text-lg text-zinc-400 font-normal">/{{ $totalServices }}</span></span>
             </div>
-            <div class="w-12 h-12 bg-violet-500/10 text-violet-600 rounded-2xl flex items-center justify-center shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            <div class="w-10 h-10 bg-zinc-50 text-zinc-500 rounded-lg border border-zinc-200 flex items-center justify-center shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>
             </div>
+        </div>
+        <div class="text-[11px] text-zinc-400 mt-4 font-medium">Katalog perawatan aktif online</div>
+    </div>
+
+    <!-- Active Promotions -->
+    <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+            <div>
+                <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Promo Aktif</span>
+                <span class="text-3xl font-bold text-zinc-900 tracking-tight leading-none">{{ $activePromotions }}<span class="text-lg text-zinc-400 font-normal">/{{ $totalPromotions }}</span></span>
+            </div>
+            <div class="w-10 h-10 bg-zinc-50 text-zinc-500 rounded-lg border border-zinc-200 flex items-center justify-center shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+            </div>
+        </div>
+        <div class="text-[11px] text-zinc-400 mt-4 font-medium">Kampanye musiman aktif</div>
+    </div>
+</div>
+
+<!-- Financial Stats Section -->
+<div class="mb-8">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-3.5">Keuangan & Pendapatan</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Revenue Current Month -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Pendapatan Bulan Ini</span>
+                    <span class="text-2xl font-bold text-zinc-900 tracking-tight leading-none">Rp {{ number_format($monthRevenue, 0, ',', '.') }}</span>
+                </div>
+                <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 flex items-center justify-center shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+            </div>
+            <div class="text-[11px] text-emerald-600 mt-4 font-semibold flex items-center gap-1">
+                <span>Kalender Bulan: {{ now()->translatedFormat('F Y') }}</span>
+            </div>
+        </div>
+
+        <!-- Revenue Filter Period -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Pendapatan Periode Filter</span>
+                    <span class="text-2xl font-bold text-zinc-900 tracking-tight leading-none">Rp {{ number_format($filteredRevenue, 0, ',', '.') }}</span>
+                </div>
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 flex items-center justify-center shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><circle cx="18" cy="15" r="1"/></svg>
+                </div>
+            </div>
+            <div class="text-[11px] text-zinc-500 mt-4 font-semibold">
+                @if($date)
+                    Tanggal: {{ \Carbon\Carbon::parse($date)->format('d M Y') }}
+                @else
+                    Seluruh Periode (Tanpa Filter)
+                @endif
+            </div>
+        </div>
+
+        <!-- Revenue Total -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-6 shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="text-zinc-500 text-xs font-medium uppercase tracking-wider block mb-1">Total Pendapatan (Keseluruhan)</span>
+                    <span class="text-2xl font-bold text-zinc-900 tracking-tight leading-none">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
+                </div>
+                <div class="w-10 h-10 bg-zinc-50 text-zinc-500 rounded-lg border border-zinc-200 flex items-center justify-center shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="6" y2="18"/><line x1="10" x2="14" y1="18" y2="18"/><line x1="10" x2="14" y1="6" y2="6"/><path d="M12 18a4 4 0 0 0 0-8c-2 0-2-2-4-2h8"/></svg>
+                </div>
+            </div>
+            <div class="text-[11px] text-zinc-400 mt-4 font-semibold">Akumulasi seluruh transaksi selesai</div>
         </div>
     </div>
 </div>
 
-<!-- Bagian Alur Reservasi -->
-<div class="mb-10">
-    <span class="text-xs font-bold uppercase tracking-widest text-[#5d3a3a] block mb-4">Alur Reservasi</span>
+<!-- Booking Status Section -->
+<div class="mb-8">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-3.5">Alur Reservasi</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Status Menunggu -->
-        <div class="bg-white rounded-2xl border border-stone-200/50 p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div class="flex items-center gap-4">
-                <div class="w-3 h-10 rounded-full bg-amber-400"></div>
+        <!-- Status Pending -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 rounded-full bg-amber-500"></div>
                 <div>
-                    <span class="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Menunggu Persetujuan</span>
-                    <span class="text-2xl font-extrabold text-stone-900 leading-none mt-1 block">{{ $pendingBookings }}</span>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider block">Menunggu</span>
+                    <span class="text-xl font-bold text-zinc-900 mt-0.5 block">{{ $pendingBookings }}</span>
                 </div>
             </div>
-            <span class="text-amber-500 bg-amber-50 text-[10px] font-bold px-2.5 py-1 rounded-lg">Antrean</span>
+            <span class="text-amber-800 bg-amber-50 border border-amber-100 text-[10px] font-semibold px-2 py-0.5 rounded">Antrean</span>
         </div>
 
-        <!-- Status Dikonfirmasi -->
-        <div class="bg-white rounded-2xl border border-stone-200/50 p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div class="flex items-center gap-4">
-                <div class="w-3 h-10 rounded-full bg-blue-500"></div>
+        <!-- Status Confirmed -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 rounded-full bg-blue-500"></div>
                 <div>
-                    <span class="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Slot Dikonfirmasi</span>
-                    <span class="text-2xl font-extrabold text-stone-900 leading-none mt-1 block">{{ $confirmedBookings }}</span>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider block">Dikonfirmasi</span>
+                    <span class="text-xl font-bold text-zinc-900 mt-0.5 block">{{ $confirmedBookings }}</span>
                 </div>
             </div>
-            <span class="text-blue-600 bg-blue-50 text-[10px] font-bold px-2.5 py-1 rounded-lg">Aman</span>
+            <span class="text-blue-800 bg-blue-50 border border-blue-100 text-[10px] font-semibold px-2 py-0.5 rounded">Aman</span>
         </div>
 
-        <!-- Status Selesai -->
-        <div class="bg-white rounded-2xl border border-stone-200/50 p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div class="flex items-center gap-4">
-                <div class="w-3 h-10 rounded-full bg-emerald-500"></div>
+        <!-- Status Completed -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 rounded-full bg-emerald-500"></div>
                 <div>
-                    <span class="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Sesi Selesai</span>
-                    <span class="text-2xl font-extrabold text-stone-900 leading-none mt-1 block">{{ $completedBookings }}</span>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider block">Selesai</span>
+                    <span class="text-xl font-bold text-zinc-900 mt-0.5 block">{{ $completedBookings }}</span>
                 </div>
             </div>
-            <span class="text-emerald-600 bg-emerald-50 text-[10px] font-bold px-2.5 py-1 rounded-lg">Selesai</span>
+            <span class="text-emerald-800 bg-emerald-50 border border-emerald-100 text-[10px] font-semibold px-2 py-0.5 rounded">Selesai</span>
         </div>
 
-        <!-- Status Dibatalkan -->
-        <div class="bg-white rounded-2xl border border-stone-200/50 p-5 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group">
-            <div class="flex items-center gap-4">
-                <div class="w-3 h-10 rounded-full bg-rose-400"></div>
+        <!-- Status Cancelled -->
+        <div class="bg-white rounded-xl border border-zinc-200 p-5 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 rounded-full bg-zinc-400"></div>
                 <div>
-                    <span class="text-stone-400 text-[10px] font-bold uppercase tracking-wider block">Dibatalkan / Absen</span>
-                    <span class="text-2xl font-extrabold text-stone-900 leading-none mt-1 block">{{ $cancelledBookings }}</span>
+                    <span class="text-zinc-500 text-[10px] font-semibold uppercase tracking-wider block">Dibatalkan</span>
+                    <span class="text-xl font-bold text-zinc-900 mt-0.5 block">{{ $cancelledBookings }}</span>
                 </div>
             </div>
-            <span class="text-rose-500 bg-rose-50 text-[10px] font-bold px-2.5 py-1 rounded-lg">Tutup</span>
+            <span class="text-zinc-750 bg-zinc-100 border border-zinc-200 text-[10px] font-semibold px-2 py-0.5 rounded">Tutup</span>
         </div>
     </div>
 </div>

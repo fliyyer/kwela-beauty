@@ -14,7 +14,7 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        $services = Service::all();
+        $services = Service::latest()->paginate(10);
         
         return view('admin.services.index', compact('services'));
     }
@@ -97,5 +97,19 @@ class ServiceController extends Controller
         $service->delete();
 
         return redirect()->route('admin.services.index')->with('success', 'Service deleted successfully.');
+    }
+
+    /**
+     * Update the status of a service.
+     */
+    public function updateStatus(Request $request, Service $service)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $service->update(['status' => $validated['status']]);
+
+        return redirect()->back()->with('success', 'Service status updated successfully.');
     }
 }

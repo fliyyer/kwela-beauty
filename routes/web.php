@@ -29,7 +29,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('/services', AdminServiceController::class);
+    Route::patch('/services/{service}/status', [AdminServiceController::class, 'updateStatus'])->name('services.updateStatus');
     Route::resource('/promotions', AdminPromotionController::class);
+    Route::patch('/promotions/{promotion}/status', [AdminPromotionController::class, 'updateStatus'])->name('promotions.updateStatus');
     Route::resource('/vouchers', AdminVoucherController::class);
     Route::resource('/bookings', AdminBookingController::class)->except(['create', 'store']);
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
