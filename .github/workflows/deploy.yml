@@ -1,4 +1,4 @@
-name: Deploy to cPanel Shared Hosting
+name: Deploy to cPanel Shared Hosting (Zip Method)
 
 on:
   push:
@@ -19,8 +19,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3' # Match your cPanel hosting PHP version
-          extensions: mbstring, xml, ctype, iconv, intl, bcmath, pdo, sqlite
+          php-version: "8.3" # Match your cPanel hosting PHP version
+          extensions: mbstring, xml, ctype, iconv, intl, bcmath, pdo, sqlite, zip
           coverage: none
 
       # 3. Install Composer Dependencies (Optimized for Production)
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       # 5. Install & Build Frontend Assets (Vite Production Build)
       - name: Build Assets
@@ -40,36 +40,77 @@ jobs:
           npm ci
           npm run build
 
-      # 5.5. Modify public/index.php paths for cPanel split directory structure before deploying
+      # 6. Modify public/index.php paths for cPanel split directory structure before deploying
       - name: Adapt index.php for Shared Hosting
         run: |
           sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../kwela-beauty/vendor/autoload.php'|g" public/index.php
           sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../kwela-beauty/bootstrap/app.php'|g" public/index.php
           sed -i "s|__DIR__.'/../storage/framework/maintenance.php'|__DIR__.'/../kwela-beauty/storage/framework/maintenance.php'|g" public/index.php
 
-      # 6. Deploy CORE Laravel files to /kwela-beauty
-      # Excludes the local public/ directory from being synced to the core path
-      - name: Sync Core Files to Server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}
-          server-dir: /kwela-beauty/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            **/tests/**
-            public/**
-            .env
-            phpunit.xml
-            README.md
+      # 7. Create Deployment Archives
+      # This packs core files (including vendor) and public files separately
+      - name: Create Deployment Archives
+        run: |
+          # Zip the Laravel core engine (including vendor)
+          zip -r public/project.zip . -x "public/*" "node_modules/*" ".git/*" ".github/*" "tests/*" "phpunit.xml" ".env"
 
-      # 7. Deploy PUBLIC Laravel files directly to /public_html
-      # Uploads the contents of the built local ./public/ folder directly to server public_html
-      - name: Sync Public Files to Server
+          # Zip the public assets
+          cd public
+          zip -r public.zip . -x "project.zip"
+          cd ..
+
+      # 8. Generate Unzip Script
+      - name: Generate Unzip Script
+        run: |
+          cat << 'EOF' > public/unzip.php
+          <?php
+          $secret = $_GET['secret'] ?? '';
+          if (empty($secret) || $secret !== '${{ secrets.DEPLOY_SECRET }}') {
+              header('HTTP/1.0 403 Forbidden');
+              echo 'Forbidden';
+              exit;
+          }
+
+          $zipFiles = [
+              'project.zip' => '/home/kwec8243/kwela-beauty',
+              'public.zip' => '/home/kwec8243/public_html'
+          ];
+
+          $errors = [];
+          foreach ($zipFiles as $zipFile => $extractTo) {
+              $zipPath = '/home/kwec8243/public_html/' . $zipFile;
+              if (file_exists($zipPath)) {
+                  $zip = new ZipArchive;
+                  if ($zip->open($zipPath) === TRUE) {
+                      if (!is_dir($extractTo)) {
+                          mkdir($extractTo, 0755, true);
+                      }
+                      $zip->extractTo($extractTo);
+                      $zip->close();
+                      echo "Successfully extracted $zipFile to $extractTo\n";
+                      unlink($zipPath); // Delete the zip file after extraction
+                  } else {
+                      $errors[] = "Failed to open $zipFile";
+                  }
+              } else {
+                  $errors[] = "$zipFile not found at $zipPath";
+              }
+          }
+
+          // Self-destruct unzip script
+          unlink(__FILE__);
+
+          if (!empty($errors)) {
+              header('HTTP/1.0 500 Internal Server Error');
+              echo implode("\n", $errors);
+              exit;
+          }
+          echo "Extraction completed successfully!";
+          EOF
+
+      # 9. Deploy public/ folder to /public_html via FTP
+      # This uploads only index.php, build/, unzip.php, and the zip archives (extremely fast!)
+      - name: Upload Deployment Package to Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -79,3 +120,7 @@ jobs:
           server-dir: /public_html/
           local-dir: ./public/
 
+      # 10. Trigger Remote Extraction
+      - name: Trigger Remote Extraction
+        run: |
+          curl -sSf "${{ secrets.DEPLOY_URL }}/unzip.php?secret=${{ secrets.DEPLOY_SECRET }}"
