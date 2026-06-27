@@ -1,0 +1,81 @@
+name: Deploy to cPanel Shared Hosting
+
+on:
+  push:
+    branches:
+      - main # Trigger deployment when pushing to main branch
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Setup PHP environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3' # Match your cPanel hosting PHP version
+          extensions: mbstring, xml, ctype, iconv, intl, bcmath, pdo, sqlite
+          coverage: none
+
+      # 3. Install Composer Dependencies (Optimized for Production)
+      - name: Install Composer Dependencies
+        run: |
+          composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --no-scripts --optimize-autoloader
+
+      # 4. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 5. Install & Build Frontend Assets (Vite Production Build)
+      - name: Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      # 5.5. Modify public/index.php paths for cPanel split directory structure before deploying
+      - name: Adapt index.php for Shared Hosting
+        run: |
+          sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../kwela-beauty/vendor/autoload.php'|g" public/index.php
+          sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../kwela-beauty/bootstrap/app.php'|g" public/index.php
+          sed -i "s|__DIR__.'/../storage/framework/maintenance.php'|__DIR__.'/../kwela-beauty/storage/framework/maintenance.php'|g" public/index.php
+
+      # 6. Deploy CORE Laravel files to /kwela-beauty
+      # Excludes the local public/ directory from being synced to the core path
+      - name: Sync Core Files to Server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
+          server-dir: /kwela-beauty/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            public/**
+            .env
+            phpunit.xml
+            README.md
+
+      # 7. Deploy PUBLIC Laravel files directly to /public_html
+      # Uploads the contents of the built local ./public/ folder directly to server public_html
+      - name: Sync Public Files to Server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
+          server-dir: /public_html/
+          local-dir: ./public/
+

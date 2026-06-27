@@ -21,3 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*'),
         );
     })->create();
+
+// Bind the public path dynamically for cPanel shared hosting split-directory structure
+if (file_exists(dirname(__DIR__) . '/../public_html')) {
+    $app->usePublicPath(realpath(dirname(__DIR__) . '/../public_html'));
+}
+
+return $app;
