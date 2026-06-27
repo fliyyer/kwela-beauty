@@ -109,19 +109,28 @@ jobs:
           echo "Extraction completed successfully!";
           EOF
 
-      # 9. Deploy public/ folder to /public_html via FTP
-      # This uploads only index.php, build/, unzip.php, and the zip archives (extremely fast!)
-      - name: Upload Deployment Package to Server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || 21 }}
-          server-dir: ${{ secrets.FTP_TARGET_DIR || 'public_html/' }}
-          local-dir: ./public/
+      # 9. Upload Deployment Package to Server via cURL FTP (Fast & Reliable)
+      # This completely bypasses git-ftp cache/untracked file limitations
+      - name: Upload Files via FTP
+        run: |
+          TARGET_DIR="${{ secrets.FTP_TARGET_DIR || 'public_html/' }}"
+          # Ensure trailing slash
+          [[ "$TARGET_DIR" != */ ]] && TARGET_DIR="$TARGET_DIR/"
+          
+          echo "Uploading project.zip..."
+          curl --ftp-create-dirs -T public/project.zip -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_SERVER }}/$TARGET_DIR"project.zip
+          
+          echo "Uploading public.zip..."
+          curl --ftp-create-dirs -T public/public.zip -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_SERVER }}/$TARGET_DIR"public.zip
+          
+          echo "Uploading unzip.php..."
+          curl --ftp-create-dirs -T public/unzip.php -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_SERVER }}/$TARGET_DIR"unzip.php
+          
+          echo "Uploading debug.php..."
+          curl --ftp-create-dirs -T public/debug.php -u "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" "ftp://${{ secrets.FTP_SERVER }}/$TARGET_DIR"debug.php
 
       # 10. Trigger Remote Extraction
       - name: Trigger Remote Extraction
         run: |
           curl -sSf "${{ secrets.DEPLOY_URL }}/unzip.php?secret=${{ secrets.DEPLOY_SECRET }}"
+
