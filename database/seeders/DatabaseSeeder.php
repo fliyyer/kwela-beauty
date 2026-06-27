@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             PromotionSeeder::class,
             SettingSeeder::class,
+            VoucherSeeder::class,
         ]);
     }
 }

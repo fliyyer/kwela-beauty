@@ -200,6 +200,60 @@
                 </div>
             </div>
 
+            <!-- Step 4: Price Summary & Voucher -->
+            <div class="mb-14 relative z-10 border-t border-stone-100 pt-10">
+                <div class="flex items-center gap-4 mb-8">
+                    <span class="w-10 h-10 rounded-2xl bg-[#5d3a3a]/10 text-[#5d3a3a] flex items-center justify-center font-bold text-base shadow-sm">
+                        04
+                    </span>
+                    <div>
+                        <h2 class="text-2xl font-bold text-stone-900" style="font-family: 'Playfair Display', serif;">Voucher & Summary</h2>
+                        <p class="text-stone-400 text-xs mt-0.5">Gunakan kode voucher dan periksa rincian biaya Anda</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                    <!-- Voucher Input -->
+                    <div class="md:col-span-6 space-y-4">
+                        <div>
+                            <label for="voucher_input" class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Kode Voucher</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="voucher_input" 
+                                    class="w-full px-5 py-4 border border-stone-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#5d3a3a]/20 focus:border-[#5d3a3a] bg-stone-50/50 hover:bg-stone-50/20 focus:bg-white transition-all text-stone-800 placeholder-stone-400 font-mono font-bold uppercase"
+                                    placeholder="CONTOH: DISKON10" style="text-transform: uppercase;">
+                                <button type="button" id="apply_voucher_btn"
+                                    class="px-6 py-4 bg-stone-900 hover:bg-[#5d3a3a] text-white rounded-2xl font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md">
+                                    Apply
+                                </button>
+                            </div>
+                            <div id="voucher_message" class="mt-2 text-xs font-semibold hidden"></div>
+                            <!-- Hidden input to submit with form -->
+                            <input type="hidden" name="voucher_code" id="voucher_code_hidden" value="{{ old('voucher_code') }}">
+                        </div>
+                    </div>
+
+                    <!-- Price Summary Details -->
+                    <div class="md:col-span-6 bg-stone-50 border border-stone-200/60 p-6 rounded-[2rem] space-y-4">
+                        <h3 class="text-sm font-bold text-stone-800 uppercase tracking-wider border-b border-stone-200/60 pb-2">Rincian Pembayaran</h3>
+                        
+                        <div class="space-y-2 text-sm text-stone-600 font-medium">
+                            <div class="flex justify-between">
+                                <span>Subtotal</span>
+                                <span id="summary_subtotal" class="font-bold text-stone-800">Rp 0</span>
+                            </div>
+                            <div id="summary_discount_row" class="flex justify-between text-emerald-600 hidden font-semibold">
+                                <span>Diskon (<span id="applied_code_label"></span>)</span>
+                                <span>-<span id="summary_discount">Rp 0</span></span>
+                            </div>
+                            <div class="border-t border-stone-200/60 pt-3 flex justify-between text-stone-900 font-extrabold text-base">
+                                <span>Total Akhir</span>
+                                <span id="summary_total" class="text-[#5d3a3a] text-lg">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Additional Notes -->
             <div class="mb-12 relative z-10 border-t border-stone-100 pt-10">
                 <label for="notes" class="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Special Requests (Optional)</label>
@@ -224,4 +278,172 @@
         </form>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const servicePrices = @json($services->pluck('price', 'id')->map(fn($p) => (float)$p));
+        const checkboxes = document.querySelectorAll('input[name="services[]"]');
+        const voucherInput = document.getElementById('voucher_input');
+        const applyVoucherBtn = document.getElementById('apply_voucher_btn');
+        const voucherMessage = document.getElementById('voucher_message');
+        const voucherCodeHidden = document.getElementById('voucher_code_hidden');
+        
+        const summarySubtotal = document.getElementById('summary_subtotal');
+        const summaryDiscountRow = document.getElementById('summary_discount_row');
+        const appliedCodeLabel = document.getElementById('applied_code_label');
+        const summaryDiscount = document.getElementById('summary_discount');
+        const summaryTotal = document.getElementById('summary_total');
+
+        function formatRupiah(amount) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(amount);
+        }
+
+        function getSelectedServiceIds() {
+            const selected = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selected.push(parseInt(cb.value));
+                }
+            });
+            return selected;
+        }
+
+        function getSelectedSubtotal(selectedIds) {
+            let total = 0;
+            selectedIds.forEach(id => {
+                if (servicePrices[id]) {
+                    total += servicePrices[id];
+                }
+            });
+            return total;
+        }
+
+        function updateSummary() {
+            const selectedIds = getSelectedServiceIds();
+            const subtotal = getSelectedSubtotal(selectedIds);
+            
+            // Update Subtotal UI
+            summarySubtotal.textContent = formatRupiah(subtotal);
+
+            // If no services selected, reset everything
+            if (selectedIds.length === 0) {
+                summaryDiscountRow.classList.add('hidden');
+                summaryTotal.textContent = formatRupiah(0);
+                voucherCodeHidden.value = '';
+                voucherMessage.classList.add('hidden');
+                voucherMessage.textContent = '';
+                applyVoucherBtn.disabled = true;
+                applyVoucherBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            applyVoucherBtn.disabled = false;
+            applyVoucherBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            const appliedCode = voucherCodeHidden.value;
+            if (appliedCode) {
+                // If a voucher is applied, validate/recalculate it
+                applyVoucherAjax(appliedCode, selectedIds, false);
+            } else {
+                // No voucher, total is subtotal
+                summaryDiscountRow.classList.add('hidden');
+                summaryTotal.textContent = formatRupiah(subtotal);
+            }
+        }
+
+        function applyVoucherAjax(code, serviceIds, isManualClick = false) {
+            applyVoucherBtn.disabled = true;
+            applyVoucherBtn.textContent = 'Applying...';
+
+            fetch("{{ route('booking.applyVoucher') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    voucher_code: code,
+                    service_ids: serviceIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                applyVoucherBtn.disabled = false;
+                applyVoucherBtn.textContent = 'Apply';
+
+                if (data.valid) {
+                    // Update hidden code
+                    voucherCodeHidden.value = data.voucher_code;
+                    
+                    // Show success status
+                    voucherMessage.className = "mt-2 text-xs font-semibold text-emerald-600";
+                    voucherMessage.textContent = data.message;
+                    voucherMessage.classList.remove('hidden');
+
+                    // Show Discount in Summary
+                    appliedCodeLabel.textContent = data.voucher_code;
+                    summaryDiscount.textContent = data.formatted_discount;
+                    summaryDiscountRow.classList.remove('hidden');
+
+                    // Update Final Total
+                    summaryTotal.textContent = data.formatted_final_total;
+                } else {
+                    // If user manually clicked apply, show error
+                    if (isManualClick || code === voucherCodeHidden.value) {
+                        voucherCodeHidden.value = '';
+                        voucherMessage.className = "mt-2 text-xs font-semibold text-rose-500";
+                        voucherMessage.textContent = data.message;
+                        voucherMessage.classList.remove('hidden');
+
+                        summaryDiscountRow.classList.add('hidden');
+                        
+                        const subtotal = getSelectedSubtotal(serviceIds);
+                        summaryTotal.textContent = formatRupiah(subtotal);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                applyVoucherBtn.disabled = false;
+                applyVoucherBtn.textContent = 'Apply';
+                if (isManualClick) {
+                    voucherMessage.className = "mt-2 text-xs font-semibold text-rose-500";
+                    voucherMessage.textContent = "Terjadi kesalahan koneksi. Silakan coba lagi.";
+                    voucherMessage.classList.remove('hidden');
+                }
+            });
+        }
+
+        // Checkbox event listeners
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateSummary);
+        });
+
+        // Apply voucher button listener
+        applyVoucherBtn.addEventListener('click', function() {
+            const code = voucherInput.value.trim();
+            const selectedIds = getSelectedServiceIds();
+
+            if (selectedIds.length === 0) {
+                voucherMessage.className = "mt-2 text-xs font-semibold text-rose-500";
+                voucherMessage.textContent = "Silakan pilih minimal satu layanan terlebih dahulu.";
+                voucherMessage.classList.remove('hidden');
+                return;
+            }
+
+            if (!code) {
+                voucherMessage.className = "mt-2 text-xs font-semibold text-rose-500";
+                voucherMessage.textContent = "Silakan masukkan kode voucher.";
+                voucherMessage.classList.remove('hidden');
+                return;
+            }
+
+            applyVoucherAjax(code, selectedIds, true);
+        });
+
+        // Initialize on load
+        updateSummary();
+    });
+</script>
 @endsection

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
+use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,7 @@ Route::get('/services', [ServiceController::class, 'index'])->name('services.ind
 Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+Route::post('/booking/apply-voucher', [BookingController::class, 'applyVoucher'])->name('booking.applyVoucher');
 Route::get('/booking/success', [BookingController::class, 'success'])->name('booking.success');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 
@@ -28,6 +30,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     Route::resource('/services', AdminServiceController::class);
     Route::resource('/promotions', AdminPromotionController::class);
+    Route::resource('/vouchers', AdminVoucherController::class);
     Route::resource('/bookings', AdminBookingController::class)->except(['create', 'store']);
     Route::patch('/bookings/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.updateStatus');
 

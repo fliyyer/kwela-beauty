@@ -56,6 +56,13 @@
                         Promotions
                     </a>
 
+                    <!-- Vouchers -->
+                    <a href="{{ route('admin.vouchers.index') }}" 
+                       class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium tracking-wide group {{ request()->routeIs('admin.vouchers.*') ? 'bg-gradient-to-r from-[#5d3a3a] to-[#7a4d4d] text-white shadow-lg shadow-[#5d3a3a]/20' : 'hover:bg-white/5 hover:text-white' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="mr-3 transition-transform group-hover:scale-105"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v14"/><path d="M9 9h.01"/><path d="M9 15h.01"/></svg>
+                        Vouchers
+                    </a>
+
                     <!-- Bookings -->
                     <a href="{{ route('admin.bookings.index') }}" 
                        class="flex items-center px-4 py-3 rounded-xl transition-all duration-300 text-sm font-medium tracking-wide group {{ request()->routeIs('admin.bookings.*') ? 'bg-gradient-to-r from-[#5d3a3a] to-[#7a4d4d] text-white shadow-lg shadow-[#5d3a3a]/20' : 'hover:bg-white/5 hover:text-white' }}">

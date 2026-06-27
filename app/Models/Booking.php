@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Booking extends Model
 {
@@ -23,6 +24,9 @@ class Booking extends Model
         'booking_time',
         'status',
         'notes',
+        'voucher_id',
+        'voucher_code',
+        'discount_amount',
     ];
 
     /**
@@ -32,6 +36,7 @@ class Booking extends Model
      */
     protected $casts = [
         'booking_date' => 'date',
+        'discount_amount' => 'float',
     ];
 
     /**
@@ -42,6 +47,14 @@ class Booking extends Model
         return $this->belongsToMany(Service::class, 'booking_services')
                     ->withPivot('price')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the voucher applied to this booking.
+     */
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class);
     }
 
     /**
@@ -61,11 +74,35 @@ class Booking extends Model
     }
 
     /**
-     * Get total price of booking
+     * Get original total price of booking (before discount)
+     */
+    public function getOriginalPriceAttribute(): float
+    {
+        return $this->services->sum('pivot.price');
+    }
+
+    /**
+     * Get total price of booking (after discount)
      */
     public function getTotalPriceAttribute(): float
     {
-        return $this->services->sum('pivot.price');
+        return max(0.0, $this->original_price - ($this->discount_amount ?? 0));
+    }
+
+    /**
+     * Format original price for display
+     */
+    public function getFormattedOriginalPriceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->original_price, 0, ',', '.');
+    }
+
+    /**
+     * Format discount price for display
+     */
+    public function getFormattedDiscountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->discount_amount ?? 0, 0, ',', '.');
     }
 
     /**

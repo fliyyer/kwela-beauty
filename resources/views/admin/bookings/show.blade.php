@@ -95,6 +95,19 @@
                         {{ $booking->booking_time }}
                     </dd>
                 </div>
+                @if(($booking->discount_amount ?? 0) > 0)
+                <div class="flex flex-col sm:flex-row sm:items-center border-b border-stone-100/50 pb-3">
+                    <dt class="w-full sm:w-32 text-xs font-bold uppercase tracking-wider text-stone-400 mb-1 sm:mb-0">Harga Awal</dt>
+                    <dd class="text-stone-700 font-semibold text-sm">{{ $booking->formatted_original_price }}</dd>
+                </div>
+                <div class="flex flex-col sm:flex-row sm:items-center border-b border-stone-100/50 pb-3">
+                    <dt class="w-full sm:w-32 text-xs font-bold uppercase tracking-wider text-stone-400 mb-1 sm:mb-0">Diskon</dt>
+                    <dd class="text-emerald-700 font-bold text-sm bg-emerald-50 border border-emerald-100/40 px-2.5 py-1 rounded-xl w-fit flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        -{{ $booking->formatted_discount }} <span class="text-[10px] font-mono text-emerald-600 bg-emerald-100/80 px-1.5 py-0.5 rounded">Kode: {{ $booking->voucher_code }}</span>
+                    </dd>
+                </div>
+                @endif
                 <div class="flex flex-col sm:flex-row sm:items-center border-b border-stone-100/50 pb-3">
                     <dt class="w-full sm:w-32 text-xs font-bold uppercase tracking-wider text-stone-400 mb-1 sm:mb-0">Total Harga</dt>
                     <dd class="text-[#5d3a3a] font-extrabold text-base bg-[#5d3a3a]/5 border border-[#5d3a3a]/10 px-3 py-1 rounded-xl w-fit">
