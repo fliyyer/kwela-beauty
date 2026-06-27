@@ -4,47 +4,47 @@
 
 @section('content')
 <section class="py-16 bg-white min-h-[60vh] flex items-center">
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <div class="max-w-md mx-auto px-6 text-center">
         <!-- Success Icon -->
         <div class="mb-8">
-            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            <div class="w-16 h-16 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
         </div>
         
         <!-- Success Message -->
-        <h1 class="text-3xl font-bold text-kwela-maroon">Booking Received!</h1>
-        <p class="mt-4 text-lg text-kwela-dark">
+        <h1 class="text-2xl font-bold text-kwela-maroon tracking-tight">Booking Received!</h1>
+        <p class="mt-3 text-sm text-zinc-500 leading-relaxed">
             Thank you for your booking. We have received your appointment request.
         </p>
-        <p class="mt-2 text-sm text-kwela-dark">
-            Admin will confirm your schedule via WhatsApp or email shortly.
+        <p class="mt-1 text-xs text-zinc-400">
+            Admin akan segera melakukan konfirmasi jadwal Anda melalui WhatsApp.
         </p>
         
         <!-- Additional Info -->
-        <div class="mt-8 p-6 bg-kwela-cream rounded-lg">
-            <h3 class="font-semibold text-kwela-maroon mb-2">What's Next?</h3>
-            <ul class="text-left text-sm text-kwela-dark space-y-2">
-                <li class="flex items-start">
-                    <span class="mr-2">1.</span>
-                    Our team will review your booking request
+        <div class="mt-6 p-5 bg-zinc-50 border border-zinc-200 rounded-lg text-left">
+            <h3 class="font-semibold text-kwela-maroon text-xs uppercase tracking-wider mb-3">What's Next?</h3>
+            <ul class="text-xs text-zinc-500 space-y-2 font-medium">
+                <li class="flex items-start gap-2">
+                    <span class="text-zinc-400">1.</span>
+                    <span>Our team will review your booking request.</span>
                 </li>
-                <li class="flex items-start">
-                    <span class="mr-2">2.</span>
-                    You will receive a confirmation via WhatsApp or email
+                <li class="flex items-start gap-2">
+                    <span class="text-zinc-400">2.</span>
+                    <span>You will receive a confirmation via WhatsApp or email.</span>
                 </li>
-                <li class="flex items-start">
-                    <span class="mr-2">3.</span>
-                    Please arrive 10 minutes before your scheduled appointment
+                <li class="flex items-start gap-2">
+                    <span class="text-zinc-400">3.</span>
+                    <span>Please arrive 10 minutes before your scheduled appointment.</span>
                 </li>
             </ul>
         </div>
         
         <!-- Back to Home Button -->
         <div class="mt-8">
-            <a href="{{ route('home') }}" class="inline-block bg-kwela-maroon text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors font-semibold">
+            <a href="{{ route('home') }}" class="inline-block bg-kwela-maroon hover:bg-kwela-maroon/90 text-white px-6 py-2.5 rounded-md text-xs font-semibold uppercase tracking-wider shadow-sm transition-colors">
                 Back to Home
             </a>
         </div>
