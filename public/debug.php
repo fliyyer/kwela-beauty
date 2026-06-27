@@ -43,7 +43,7 @@ $laravelLog = '/home/kwec8243/kwela-beauty/storage/logs/laravel.log';
 if (file_exists($laravelLog)) {
     $lines = file($laravelLog);
     if (!empty($lines)) {
-        $lastLines = array_slice($lines, -30);
+        $lastLines = array_slice($lines, -150);
         echo "<pre>" . htmlspecialchars(implode("", $lastLines)) . "</pre>";
     } else {
         echo "<p>Laravel log file is empty.</p>";
