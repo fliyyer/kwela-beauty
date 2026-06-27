@@ -3,7 +3,7 @@
 // Secure diagnostics helper for Kwéla Beauty Studio cPanel deployment
 
 $secret = $_GET['secret'] ?? '';
-$configuredSecret = '${{ secrets.DEPLOY_SECRET }}';
+$configuredSecret = 'kiwil';
 
 if (empty($secret) || $secret !== $configuredSecret) {
     header('HTTP/1.0 403 Forbidden');

@@ -46,7 +46,6 @@ jobs:
           sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../kwela-beauty/vendor/autoload.php'|g" public/index.php
           sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../kwela-beauty/bootstrap/app.php'|g" public/index.php
           sed -i "s|__DIR__.'/../storage/framework/maintenance.php'|__DIR__.'/../kwela-beauty/storage/framework/maintenance.php'|g" public/index.php
-          sed -i "s|'\${{ secrets.DEPLOY_SECRET }}'|'${{ secrets.DEPLOY_SECRET }}'|g" public/debug.php
 
       # 7. Create Deployment Archives
       # This packs core files (including vendor) and public files separately
@@ -66,7 +65,7 @@ jobs:
           cat << 'EOF' > public/unzip.php
           <?php
           $secret = $_GET['secret'] ?? '';
-          if (empty($secret) || $secret !== '${{ secrets.DEPLOY_SECRET }}') {
+          if (empty($secret) || $secret !== 'kiwil') {
               header('HTTP/1.0 403 Forbidden');
               echo 'Forbidden';
               exit;
@@ -132,5 +131,5 @@ jobs:
       # 10. Trigger Remote Extraction
       - name: Trigger Remote Extraction
         run: |
-          curl -sSf "${{ secrets.DEPLOY_URL }}/unzip.php?secret=${{ secrets.DEPLOY_SECRET }}"
+          curl -sSf "${{ secrets.DEPLOY_URL }}/unzip.php?secret=kiwil"
 
