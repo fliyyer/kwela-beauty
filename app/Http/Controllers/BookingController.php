@@ -186,8 +186,7 @@ class BookingController extends Controller
                             $data = $response->json();
                             $status = $data['transaction']['status'] ?? '';
                             if ($status === 'completed') {
-                                $booking->status = 'confirmed';
-                                $booking->save();
+                                $this->confirmBooking($booking);
                             }
                         }
                     } catch (\Exception $e) {
@@ -248,8 +247,7 @@ class BookingController extends Controller
                 $status = $data['transaction']['status'] ?? '';
 
                 if ($status === 'completed') {
-                    $booking->status = 'confirmed';
-                    $booking->save();
+                    $this->confirmBooking($booking);
                     return response()->json(['status' => 'success', 'message' => 'Payment confirmed and booking updated']);
                 }
             }
@@ -258,5 +256,22 @@ class BookingController extends Controller
         }
 
         return response()->json(['status' => 'ignored', 'message' => 'Transaction not completed or invalid']);
+    }
+
+    /**
+     * Confirm booking status and dispatch confirmation email via Resend SMTP.
+     */
+    private function confirmBooking(Booking $booking)
+    {
+        if ($booking->status === 'pending') {
+            $booking->status = 'confirmed';
+            $booking->save();
+
+            try {
+                \Illuminate\Support\Facades\Mail::to($booking->email)->send(new \App\Mail\BookingConfirmed($booking));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send booking confirmation email for booking ' . $booking->id . ': ' . $e->getMessage());
+            }
+        }
     }
 }
