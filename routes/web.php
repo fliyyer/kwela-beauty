@@ -22,6 +22,7 @@ Route::get('/booking', [BookingController::class, 'create'])->name('booking.crea
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::post('/booking/apply-voucher', [BookingController::class, 'applyVoucher'])->name('booking.applyVoucher');
 Route::get('/booking/success', [BookingController::class, 'success'])->name('booking.success');
+Route::post('/booking/webhook', [BookingController::class, 'webhook'])->name('booking.webhook');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 
 // Admin Routes

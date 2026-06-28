@@ -126,4 +126,15 @@ class Booking extends Model
             default => 'bg-gray-100 text-gray-800',
         };
     }
+
+    /**
+     * Get dynamic invoice number for the booking
+     */
+    public function getInvoiceNumberAttribute(): string
+    {
+        $dateStr = $this->created_at ? $this->created_at->format('dmy') : date('dmy');
+        $paddedId = str_pad($this->id, 3, '0', STR_PAD_LEFT);
+        
+        return 'INV-' . $dateStr . '-' . $paddedId;
+    }
 }

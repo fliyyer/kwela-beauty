@@ -135,15 +135,128 @@ class BookingController extends Controller
                 $voucher->increment('usage_count');
             }
 
-            return redirect()->route('booking.success');
+            // Construct Pakasir payment URL if configured
+            $slug = config('services.pakasir.slug');
+            $apiKey = config('services.pakasir.api_key');
+            $amount = (int) $booking->total_price;
+
+            if ($slug && $apiKey && $amount > 0) {
+                $redirectUrl = route('booking.success') . '?order_id=' . $booking->invoice_number;
+                $payUrl = "https://app.pakasir.com/pay/{$slug}/{$amount}?order_id={$booking->invoice_number}&redirect=" . urlencode($redirectUrl);
+                return redirect()->away($payUrl);
+            }
+
+            return redirect()->route('booking.success', ['order_id' => $booking->id]);
         });
     }
 
     /**
-     * Display booking success page.
+     * Display booking success page and check payment status if redirected back.
      */
-    public function success()
+    public function success(Request $request)
     {
-        return view('booking.success');
+        $booking = null;
+        if ($request->has('order_id')) {
+            $orderId = $request->order_id;
+            $bookingId = $orderId;
+            
+            // If the order_id is in invoice format (e.g., INV-280626-005), extract the raw ID from the end
+            if ($orderId && str_starts_with($orderId, 'INV-')) {
+                $parts = explode('-', $orderId);
+                $bookingId = (int) end($parts);
+            }
+            
+            $booking = Booking::find($bookingId);
+            
+            if ($booking && $booking->status === 'pending') {
+                $slug = config('services.pakasir.slug');
+                $apiKey = config('services.pakasir.api_key');
+                $amount = (int) $booking->total_price;
+
+                if ($slug && $apiKey && $amount > 0) {
+                    try {
+                        $response = \Illuminate\Support\Facades\Http::get('https://app.pakasir.com/api/transactiondetail', [
+                            'project' => $slug,
+                            'amount' => $amount,
+                            'order_id' => $orderId, // pass the original invoice format to Pakasir
+                            'api_key' => $apiKey,
+                        ]);
+
+                        if ($response->successful()) {
+                            $data = $response->json();
+                            $status = $data['transaction']['status'] ?? '';
+                            if ($status === 'completed') {
+                                $booking->status = 'confirmed';
+                                $booking->save();
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Fail silently on API issues to avoid breaking success page display
+                    }
+                }
+            }
+        }
+
+        return view('booking.success', compact('booking'));
+    }
+
+    /**
+     * Handle Pakasir payment status webhook.
+     */
+    public function webhook(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required',
+            'amount' => 'required',
+            'status' => 'required|string',
+            'project' => 'required|string',
+        ]);
+
+        $orderId = $request->order_id;
+        $bookingId = $orderId;
+
+        // If the order_id is in invoice format (e.g., INV-280626-005), extract the raw ID from the end
+        if (str_starts_with($orderId, 'INV-')) {
+            $parts = explode('-', $orderId);
+            $bookingId = (int) end($parts);
+        }
+
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            return response()->json(['message' => 'Booking not found'], 404);
+        }
+
+        $slug = config('services.pakasir.slug');
+        $apiKey = config('services.pakasir.api_key');
+
+        if (!$slug || !$apiKey) {
+            return response()->json(['message' => 'Pakasir credentials not configured'], 500);
+        }
+
+        try {
+            // Verify payment status directly with Pakasir Transaction Detail API
+            $response = \Illuminate\Support\Facades\Http::get('https://app.pakasir.com/api/transactiondetail', [
+                'project' => $slug,
+                'amount' => $request->amount,
+                'order_id' => $orderId,
+                'api_key' => $apiKey,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $status = $data['transaction']['status'] ?? '';
+
+                if ($status === 'completed') {
+                    $booking->status = 'confirmed';
+                    $booking->save();
+                    return response()->json(['status' => 'success', 'message' => 'Payment confirmed and booking updated']);
+                }
+            }
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+
+        return response()->json(['status' => 'ignored', 'message' => 'Transaction not completed or invalid']);
     }
 }
