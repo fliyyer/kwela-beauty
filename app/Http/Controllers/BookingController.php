@@ -170,6 +170,8 @@ class BookingController extends Controller
                 $voucher->increment('usage_count');
             }
 
+
+
             // Construct Pakasir payment URL if configured
             $slug = config('services.pakasir.slug');
             $apiKey = config('services.pakasir.api_key');
@@ -293,19 +295,18 @@ class BookingController extends Controller
         return response()->json(['status' => 'ignored', 'message' => 'Transaction not completed or invalid']);
     }
 
-    /**
-     * Confirm booking status and dispatch confirmation email via Resend SMTP.
-     */
     private function confirmBooking(Booking $booking)
     {
         if ($booking->status === 'pending') {
             $booking->status = 'confirmed';
             $booking->save();
 
+            // Send confirmation notifications (Email & WhatsApp) once payment is confirmed
             try {
-                \Illuminate\Support\Facades\Mail::to($booking->email)->send(new \App\Mail\BookingConfirmed($booking));
+                $booking->load('services');
+                \App\Services\NotificationService::sendBookingConfirmation($booking);
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Failed to send booking confirmation email for booking ' . $booking->id . ': ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('Failed to send booking confirmation notifications after payment: ' . $e->getMessage());
             }
         }
     }

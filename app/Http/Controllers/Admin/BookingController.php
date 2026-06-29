@@ -60,6 +60,15 @@ class BookingController extends Controller
 
         $booking->update(['status' => $validated['status']]);
 
+        if ($validated['status'] === 'cancelled') {
+            try {
+                $booking->load('services');
+                \App\Services\NotificationService::sendBookingCancellation($booking);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send cancellation notification for booking ' . $booking->id . ': ' . $e->getMessage());
+            }
+        }
+
         return redirect()->back()->with('success', 'Booking status updated successfully.');
     }
 
