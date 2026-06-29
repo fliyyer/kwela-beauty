@@ -96,7 +96,7 @@
                     <select name="booking_start_time" id="booking_start_time" 
                         class="w-full px-3 py-2 border border-zinc-200 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-zinc-950 text-sm font-medium cursor-pointer @error('booking_start_time') border-red-500 @enderror"
                         required>
-                        @foreach(['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00'] as $time)
+                        @foreach(['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'] as $time)
                             <option value="{{ $time }}" {{ old('booking_start_time', $bookingStartTime) == $time ? 'selected' : '' }}>{{ $time }}</option>
                         @endforeach
                     </select>

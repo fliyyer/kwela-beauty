@@ -100,12 +100,22 @@ class BookingController extends Controller
                 'date',
                 'after_or_equal:today',
                 function ($attribute, $value, $fail) use ($request) {
-                    $exists = Booking::where('booking_date', $value)
-                        ->where('booking_time', $request->booking_time)
-                        ->where('status', '!=', 'cancelled')
-                        ->exists();
-                    if ($exists) {
-                        $fail('Jadwal pada tanggal dan waktu tersebut sudah dipesan. Silakan pilih waktu/hari lain.');
+                    $services = $request->services;
+                    if (!is_array($services)) {
+                        return;
+                    }
+                    $bookedServiceIds = DB::table('booking_services')
+                        ->join('bookings', 'booking_services.booking_id', '=', 'bookings.id')
+                        ->where('bookings.booking_date', $value)
+                        ->where('bookings.booking_time', $request->booking_time)
+                        ->where('bookings.status', '!=', 'cancelled')
+                        ->pluck('booking_services.service_id')
+                        ->toArray();
+
+                    $conflictingServices = array_intersect($services, $bookedServiceIds);
+                    if (!empty($conflictingServices)) {
+                        $serviceNames = Service::whereIn('id', $conflictingServices)->pluck('name')->implode(', ');
+                        $fail("Layanan berikut sudah dipesan pada jam tersebut: {$serviceNames}. Silakan pilih waktu/hari atau layanan lain.");
                     }
                 }
             ],
@@ -301,19 +311,23 @@ class BookingController extends Controller
     }
 
     /**
-     * Check booked times for a specific date (AJAX check).
+     * Check booked services for a specific date and time (AJAX check).
      */
-    public function checkBookedTimes(Request $request)
+    public function checkBookedServices(Request $request)
     {
         $request->validate([
             'date' => 'required|date',
+            'time' => 'required|string',
         ]);
 
-        $bookedTimes = Booking::where('booking_date', $request->date)
-            ->where('status', '!=', 'cancelled')
-            ->pluck('booking_time')
+        $bookedServiceIds = DB::table('booking_services')
+            ->join('bookings', 'booking_services.booking_id', '=', 'bookings.id')
+            ->where('bookings.booking_date', $request->date)
+            ->where('bookings.booking_time', $request->time)
+            ->where('bookings.status', '!=', 'cancelled')
+            ->pluck('booking_services.service_id')
             ->toArray();
 
-        return response()->json($bookedTimes);
+        return response()->json($bookedServiceIds);
     }
 }

@@ -172,9 +172,9 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @forelse($services as $service)
-                    <label class="group relative flex items-start p-4 bg-white border border-zinc-200 rounded-lg cursor-pointer hover:border-kwela-maroon hover:bg-kwela-maroon/5 transition-all duration-200 shadow-sm">
+                    <label id="service_label_{{ $service->id }}" class="group relative flex items-start p-4 bg-white border border-zinc-200 rounded-lg cursor-pointer hover:border-kwela-maroon hover:bg-kwela-maroon/5 transition-all duration-200 shadow-sm">
                         <div class="flex items-center h-5 mt-0.5">
-                            <input type="checkbox" name="services[]" value="{{ $service->id }}" 
+                            <input type="checkbox" name="services[]" id="service_cb_{{ $service->id }}" value="{{ $service->id }}" 
                                 class="w-4 h-4 text-kwela-maroon border-zinc-300 rounded focus:ring-kwela-maroon focus:ring-offset-0 focus:ring-0 accent-kwela-maroon cursor-pointer"
                                 {{ in_array($service->id, old('services', [])) ? 'checked' : '' }}>
                         </div>
@@ -193,6 +193,7 @@
                             @else
                                 <span class="block font-bold text-kwela-maroon text-xs mt-0.5">{{ $service->formatted_price }}</span>
                             @endif
+                            <span id="service_booked_warning_{{ $service->id }}" class="block text-[10px] text-rose-600 font-bold hidden mt-1">Sudah Dipesan Pada Jam Ini</span>
                         </div>
                     </label>
                     @empty
@@ -480,44 +481,69 @@
             applyVoucherAjax(code, selectedIds, true);
         });
 
-        // AJAX dynamic time slots disable handler
-        function fetchBookedTimes() {
+        // AJAX dynamic booked services handler
+        function fetchBookedServices() {
             const selectedDate = dateInput.value;
-            if (!selectedDate) {
-                Array.from(timeSelect.options).forEach(opt => {
-                    opt.disabled = false;
-                    if (opt.value) {
-                        opt.textContent = opt.value;
+            const selectedTime = timeSelect.value;
+            
+            // If date and time are not both set, enable all checkboxes & remove warning styling
+            if (!selectedDate || !selectedTime) {
+                checkboxes.forEach(cb => {
+                    cb.disabled = false;
+                    const label = document.getElementById(`service_label_${cb.value}`);
+                    const warning = document.getElementById(`service_booked_warning_${cb.value}`);
+                    if (label) {
+                        label.classList.remove('opacity-60', 'cursor-not-allowed', 'bg-zinc-50');
+                        label.classList.add('bg-white');
+                    }
+                    if (warning) {
+                        warning.classList.add('hidden');
                     }
                 });
+                updateSummary();
                 return;
             }
 
-            fetch(`{{ route('booking.checkBookedTimes') }}?date=${selectedDate}`)
+            fetch(`{{ route('booking.checkBookedServices') }}?date=${selectedDate}&time=${selectedTime}`)
                 .then(res => res.json())
-                .then(bookedTimes => {
-                    Array.from(timeSelect.options).forEach(opt => {
-                        if (!opt.value) return;
+                .then(bookedServiceIds => {
+                    checkboxes.forEach(cb => {
+                        const serviceId = parseInt(cb.value);
+                        const isBooked = bookedServiceIds.includes(serviceId);
+                        const label = document.getElementById(`service_label_${serviceId}`);
+                        const warning = document.getElementById(`service_booked_warning_${serviceId}`);
                         
-                        const isBooked = bookedTimes.includes(opt.value);
                         if (isBooked) {
-                            opt.disabled = true;
-                            opt.textContent = `${opt.value} (Sudah dipesan)`;
-                            if (timeSelect.value === opt.value) {
-                                timeSelect.value = '';
+                            cb.checked = false; // Uncheck if it was selected
+                            cb.disabled = true;
+                            if (label) {
+                                label.classList.add('opacity-60', 'cursor-not-allowed', 'bg-zinc-50');
+                                label.classList.remove('bg-white');
+                            }
+                            if (warning) {
+                                warning.classList.remove('hidden');
                             }
                         } else {
-                            opt.disabled = false;
-                            opt.textContent = opt.value;
+                            cb.disabled = false;
+                            if (label) {
+                                label.classList.remove('opacity-60', 'cursor-not-allowed', 'bg-zinc-50');
+                                label.classList.add('bg-white');
+                            }
+                            if (warning) {
+                                warning.classList.add('hidden');
+                            }
                         }
                     });
+                    
+                    updateSummary();
                 })
                 .catch(err => {
-                    console.error('Failed to check booked times:', err);
+                    console.error('Failed to check booked services:', err);
                 });
         }
 
-        dateInput.addEventListener('change', fetchBookedTimes);
+        dateInput.addEventListener('change', fetchBookedServices);
+        timeSelect.addEventListener('change', fetchBookedServices);
 
         // Initialize on load
         updateSummary();
