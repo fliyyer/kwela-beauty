@@ -32,6 +32,14 @@ class SettingSeeder extends Seeder
                 'key' => 'maps_link',
                 'value' => 'https://maps.google.com/?q=-6.200000,106.816666',
             ],
+            [
+                'key' => 'booking_start_time',
+                'value' => '10:00',
+            ],
+            [
+                'key' => 'booking_end_time',
+                'value' => '17:00',
+            ],
         ];
 
         foreach ($settings as $setting) {

@@ -140,7 +140,7 @@
                             class="w-full px-3 py-2.5 border border-zinc-250 rounded-md focus:outline-none focus:ring-1 focus:ring-kwela-maroon focus:border-kwela-maroon bg-white hover:bg-zinc-50/30 text-zinc-900 text-sm transition-all font-medium cursor-pointer @error('booking_time') border-red-500 @enderror"
                             required>
                             <option value="">Select a time</option>
-                            @foreach(['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'] as $time)
+                            @foreach($times as $time)
                                 <option value="{{ $time }}" {{ old('booking_time') == $time ? 'selected' : '' }}>{{ $time }}</option>
                             @endforeach
                         </select>

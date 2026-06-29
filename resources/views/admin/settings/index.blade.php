@@ -86,6 +86,42 @@
             @enderror
         </div>
         
+        <!-- Row 4: Booking Operating Hours Settings -->
+        <div class="border-t border-zinc-150 pt-6">
+            <h3 class="text-sm font-bold text-zinc-950 mb-3 uppercase tracking-wider">Jam Operasional Booking</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50/50 p-4 border border-zinc-250 rounded-md">
+                <!-- Start Hour -->
+                <div>
+                    <label for="booking_start_time" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">Jam Mulai Operasional *</label>
+                    <select name="booking_start_time" id="booking_start_time" 
+                        class="w-full px-3 py-2 border border-zinc-200 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-zinc-950 text-sm font-medium cursor-pointer @error('booking_start_time') border-red-500 @enderror"
+                        required>
+                        @foreach(['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00'] as $time)
+                            <option value="{{ $time }}" {{ old('booking_start_time', $bookingStartTime) == $time ? 'selected' : '' }}>{{ $time }}</option>
+                        @endforeach
+                    </select>
+                    @error('booking_start_time')
+                    <p class="mt-1.5 text-xs text-red-500 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- End Hour -->
+                <div>
+                    <label for="booking_end_time" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">Jam Selesai Operasional *</label>
+                    <select name="booking_end_time" id="booking_end_time" 
+                        class="w-full px-3 py-2 border border-zinc-200 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-zinc-950 text-sm font-medium cursor-pointer @error('booking_end_time') border-red-500 @enderror"
+                        required>
+                        @foreach(['15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00'] as $time)
+                            <option value="{{ $time }}" {{ old('booking_end_time', $bookingEndTime) == $time ? 'selected' : '' }}>{{ $time }}</option>
+                        @endforeach
+                    </select>
+                    @error('booking_end_time')
+                    <p class="mt-1.5 text-xs text-red-500 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+        
         <!-- Actions -->
         <div class="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end">
             <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-zinc-900 text-zinc-50 px-4 py-2 rounded-md font-medium hover:bg-zinc-800 transition-colors shadow text-sm tracking-wide">
