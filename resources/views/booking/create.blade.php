@@ -247,6 +247,9 @@
                                 <span>Subtotal</span>
                                 <span id="summary_subtotal" class="font-bold text-zinc-900">Rp 0</span>
                             </div>
+                            <div id="summary_services_list" class="space-y-1.5 pl-3 border-l-2 border-zinc-250/80 py-1 text-zinc-500 text-[11px] hidden my-2.5">
+                                <!-- Filled by Javascript -->
+                            </div>
                             <div id="summary_discount_row" class="flex justify-between text-emerald-600 hidden font-semibold">
                                 <span>Diskon (<span id="applied_code_label"></span>)</span>
                                 <span>-<span id="summary_discount">Rp 0</span></span>
@@ -288,6 +291,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const servicePrices = @json($services->pluck('discounted_price', 'id')->map(fn($p) => (float)$p));
+        const serviceNames = @json($services->pluck('name', 'id'));
         const checkboxes = document.querySelectorAll('input[name="services[]"]');
         const voucherInput = document.getElementById('voucher_input');
         const applyVoucherBtn = document.getElementById('apply_voucher_btn');
@@ -295,10 +299,14 @@
         const voucherCodeHidden = document.getElementById('voucher_code_hidden');
         
         const summarySubtotal = document.getElementById('summary_subtotal');
+        const summaryServicesList = document.getElementById('summary_services_list');
         const summaryDiscountRow = document.getElementById('summary_discount_row');
         const appliedCodeLabel = document.getElementById('applied_code_label');
         const summaryDiscount = document.getElementById('summary_discount');
         const summaryTotal = document.getElementById('summary_total');
+        
+        const dateInput = document.getElementById('booking_date');
+        const timeSelect = document.getElementById('booking_time');
 
         function formatRupiah(amount) {
             return 'Rp ' + new Intl.NumberFormat('id-ID', { minimumFractionDigits: 0 }).format(amount);
@@ -330,6 +338,22 @@
             
             // Update Subtotal UI
             summarySubtotal.textContent = formatRupiah(subtotal);
+
+            // Update detailed services list
+            summaryServicesList.innerHTML = '';
+            if (selectedIds.length > 0) {
+                selectedIds.forEach(id => {
+                    if (servicePrices[id] !== undefined) {
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between font-normal text-zinc-500';
+                        div.innerHTML = `<span>• ${serviceNames[id]}</span><span>${formatRupiah(servicePrices[id])}</span>`;
+                        summaryServicesList.appendChild(div);
+                    }
+                });
+                summaryServicesList.classList.remove('hidden');
+            } else {
+                summaryServicesList.classList.add('hidden');
+            }
 
             // If no services selected, reset everything
             if (selectedIds.length === 0) {
@@ -421,9 +445,17 @@
             });
         }
 
-        // Checkbox event listeners
+        // Checkbox event listeners (Maximum 2 Limit)
         checkboxes.forEach(cb => {
-            cb.addEventListener('change', updateSummary);
+            cb.addEventListener('change', function(e) {
+                const selectedIds = getSelectedServiceIds();
+                if (selectedIds.length > 2) {
+                    this.checked = false;
+                    alert('Maksimal memilih 2 layanan per reservasi.');
+                    return;
+                }
+                updateSummary();
+            });
         });
 
         // Apply voucher button listener
@@ -447,6 +479,45 @@
 
             applyVoucherAjax(code, selectedIds, true);
         });
+
+        // AJAX dynamic time slots disable handler
+        function fetchBookedTimes() {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) {
+                Array.from(timeSelect.options).forEach(opt => {
+                    opt.disabled = false;
+                    if (opt.value) {
+                        opt.textContent = opt.value;
+                    }
+                });
+                return;
+            }
+
+            fetch(`{{ route('booking.checkBookedTimes') }}?date=${selectedDate}`)
+                .then(res => res.json())
+                .then(bookedTimes => {
+                    Array.from(timeSelect.options).forEach(opt => {
+                        if (!opt.value) return;
+                        
+                        const isBooked = bookedTimes.includes(opt.value);
+                        if (isBooked) {
+                            opt.disabled = true;
+                            opt.textContent = `${opt.value} (Sudah dipesan)`;
+                            if (timeSelect.value === opt.value) {
+                                timeSelect.value = '';
+                            }
+                        } else {
+                            opt.disabled = false;
+                            opt.textContent = opt.value;
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error('Failed to check booked times:', err);
+                });
+        }
+
+        dateInput.addEventListener('change', fetchBookedTimes);
 
         // Initialize on load
         updateSummary();

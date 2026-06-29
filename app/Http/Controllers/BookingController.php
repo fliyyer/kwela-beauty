@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Voucher;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +18,18 @@ class BookingController extends Controller
     {
         $services = Service::active()->get();
         
-        return view('booking.create', compact('services'));
+        $startTimeStr = Setting::getValue('booking_start_time', '10:00');
+        $endTimeStr = Setting::getValue('booking_end_time', '17:00');
+        
+        $startHour = (int) explode(':', $startTimeStr)[0];
+        $endHour = (int) explode(':', $endTimeStr)[0];
+        
+        $times = [];
+        for ($hour = $startHour; $hour <= $endHour; $hour++) {
+            $times[] = sprintf('%02d:00', $hour);
+        }
+        
+        return view('booking.create', compact('services', 'times'));
     }
 
     /**
@@ -83,9 +95,22 @@ class BookingController extends Controller
             'customer_name' => 'required|string|max:255',
             'email' => 'required|email',
             'phone' => 'required|string|max:20',
-            'booking_date' => 'required|date|after_or_equal:today',
+            'booking_date' => [
+                'required',
+                'date',
+                'after_or_equal:today',
+                function ($attribute, $value, $fail) use ($request) {
+                    $exists = Booking::where('booking_date', $value)
+                        ->where('booking_time', $request->booking_time)
+                        ->where('status', '!=', 'cancelled')
+                        ->exists();
+                    if ($exists) {
+                        $fail('Jadwal pada tanggal dan waktu tersebut sudah dipesan. Silakan pilih waktu/hari lain.');
+                    }
+                }
+            ],
             'booking_time' => 'required',
-            'services' => 'required|array',
+            'services' => 'required|array|max:2',
             'services.*' => 'exists:services,id',
             'notes' => 'nullable|string',
             'voucher_code' => 'nullable|string',
@@ -273,5 +298,22 @@ class BookingController extends Controller
                 \Illuminate\Support\Facades\Log::error('Failed to send booking confirmation email for booking ' . $booking->id . ': ' . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * Check booked times for a specific date (AJAX check).
+     */
+    public function checkBookedTimes(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $bookedTimes = Booking::where('booking_date', $request->date)
+            ->where('status', '!=', 'cancelled')
+            ->pluck('booking_time')
+            ->toArray();
+
+        return response()->json($bookedTimes);
     }
 }
