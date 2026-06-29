@@ -182,8 +182,17 @@
                             <span class="block font-bold text-zinc-800 group-hover:text-kwela-maroon transition-colors duration-200 text-xs md:text-sm">
                                 {{ $service->name }}
                             </span>
-                            <span class="block text-[9px] uppercase tracking-wider text-zinc-400 mt-1 font-semibold">Investment</span>
-                            <span class="block font-bold text-kwela-maroon text-xs mt-0.5">{{ $service->formatted_price }}</span>
+                            @if($service->has_discount)
+                                <div class="flex items-baseline gap-1 mt-0.5">
+                                    <span class="block font-bold text-kwela-maroon text-xs">{{ $service->formatted_discounted_price }}</span>
+                                    <span class="text-[10px] text-zinc-400 line-through font-medium">{{ $service->formatted_original_price }}</span>
+                                </div>
+                                <span class="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-bold bg-rose-50 text-rose-700 border border-rose-100/50 mt-0.5">
+                                    {{ $service->discount_label }}
+                                </span>
+                            @else
+                                <span class="block font-bold text-kwela-maroon text-xs mt-0.5">{{ $service->formatted_price }}</span>
+                            @endif
                         </div>
                     </label>
                     @empty
@@ -278,7 +287,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const servicePrices = @json($services->pluck('price', 'id')->map(fn($p) => (float)$p));
+        const servicePrices = @json($services->pluck('discounted_price', 'id')->map(fn($p) => (float)$p));
         const checkboxes = document.querySelectorAll('input[name="services[]"]');
         const voucherInput = document.getElementById('voucher_input');
         const applyVoucherBtn = document.getElementById('apply_voucher_btn');

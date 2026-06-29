@@ -19,6 +19,8 @@ class Service extends Model
         'name',
         'description',
         'price',
+        'discount_type',
+        'discount_value',
         'image',
         'status',
     ];
@@ -29,7 +31,8 @@ class Service extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'float',
+        'discount_value' => 'float',
     ];
 
     /**
@@ -51,10 +54,67 @@ class Service extends Model
     }
 
     /**
-     * Format price for display
+     * Check if the service has an active discount
+     */
+    public function getHasDiscountAttribute(): bool
+    {
+        return !empty($this->discount_type) && $this->discount_value > 0;
+    }
+
+    /**
+     * Get the calculated price after discount
+     */
+    public function getDiscountedPriceAttribute(): float
+    {
+        if (!$this->has_discount) {
+            return $this->price;
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return max(0.0, $this->price - ($this->price * ($this->discount_value / 100)));
+        }
+
+        // Fixed/nominal discount
+        return max(0.0, $this->price - $this->discount_value);
+    }
+
+    /**
+     * Get formatted original price
+     */
+    public function getFormattedOriginalPriceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->price, 0, ',', '.');
+    }
+
+    /**
+     * Get formatted discounted price
+     */
+    public function getFormattedDiscountedPriceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->discounted_price, 0, ',', '.');
+    }
+
+    /**
+     * Alias for backward compatibility or default display
      */
     public function getFormattedPriceAttribute(): string
     {
-        return 'Rp ' . number_format($this->price, 0, ',', '.');
+        return $this->getFormattedOriginalPriceAttribute();
+    }
+
+    /**
+     * Get discount label (e.g., "10% OFF" or "Rp 10.000 OFF")
+     */
+    public function getDiscountLabelAttribute(): string
+    {
+        if (!$this->has_discount) {
+            return '';
+        }
+
+        if ($this->discount_type === 'percentage') {
+            return $this->discount_value . '% OFF';
+        }
+
+        return 'Rp ' . number_format($this->discount_value, 0, ',', '.') . ' OFF';
     }
 }

@@ -49,9 +49,23 @@
                     </td>
                     
                     <td class="px-6 py-4">
-                        <span class="text-sm font-medium text-zinc-800">
-                            {{ $service->formatted_price }}
-                        </span>
+                        @if($service->has_discount)
+                            <div class="flex flex-col">
+                                <span class="text-xs text-zinc-400 line-through font-medium">
+                                    {{ $service->formatted_original_price }}
+                                </span>
+                                <span class="text-sm font-bold text-[#5c0620] mt-0.5">
+                                    {{ $service->formatted_discounted_price }}
+                                </span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-100 mt-1 w-max">
+                                    {{ $service->discount_label }}
+                                </span>
+                            </div>
+                        @else
+                            <span class="text-sm font-medium text-zinc-800">
+                                {{ $service->formatted_price }}
+                            </span>
+                        @endif
                     </td>
                     
                     <!-- Status Badge / Custom Alpine Dropdown -->

@@ -48,9 +48,9 @@ class BookingController extends Controller
             ]);
         }
 
-        // Calculate original total
+        // Calculate original total (using discounted base price if any promotion is active)
         $services = Service::whereIn('id', $request->service_ids)->get();
-        $originalTotal = $services->sum('price');
+        $originalTotal = $services->sum('discounted_price');
 
         if (!$voucher->isValidForAmount($originalTotal)) {
             return response()->json([
@@ -95,9 +95,9 @@ class BookingController extends Controller
             $voucher = null;
             $discount = 0.0;
 
-            // Resolve services to calculate original price
+            // Resolve services to calculate original price (using discounted base price if any promotion is active)
             $services = Service::whereIn('id', $validated['services'])->get();
-            $originalTotal = $services->sum('price');
+            $originalTotal = $services->sum('discounted_price');
 
             if (!empty($validated['voucher_code'])) {
                 $code = strtoupper($validated['voucher_code']);
@@ -125,9 +125,9 @@ class BookingController extends Controller
                 'discount_amount' => $discount,
             ]);
 
-            // Attach services to booking
+            // Attach services to booking using the discounted price
             foreach ($services as $service) {
-                $booking->services()->attach($service->id, ['price' => $service->price]);
+                $booking->services()->attach($service->id, ['price' => $service->discounted_price]);
             }
 
             // Increment usage if voucher was applied

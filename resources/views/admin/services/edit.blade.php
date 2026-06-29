@@ -59,6 +59,32 @@
             @enderror
         </div>
         
+        <!-- Row 2.5: Discount Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50/50 p-4 border border-zinc-200 rounded-md">
+            <div>
+                <label for="discount_type" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">Tipe Diskon</label>
+                <select name="discount_type" id="discount_type" 
+                    class="w-full px-3 py-2 border border-zinc-200 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-zinc-950 text-sm font-medium cursor-pointer @error('discount_type') border-red-500 @enderror">
+                    <option value="" {{ old('discount_type', $service->discount_type) == '' ? 'selected' : '' }}>Tidak Ada Diskon</option>
+                    <option value="fixed" {{ old('discount_type', $service->discount_type) == 'fixed' ? 'selected' : '' }}>Nominal Tetap (Rp)</option>
+                    <option value="percentage" {{ old('discount_type', $service->discount_type) == 'percentage' ? 'selected' : '' }}>Persentase (%)</option>
+                </select>
+                @error('discount_type')
+                <p class="mt-1.5 text-xs text-red-500 font-medium">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <div>
+                <label for="discount_value" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">Nilai Diskon</label>
+                <input type="number" name="discount_value" id="discount_value" value="{{ old('discount_value', $service->discount_value) }}" min="0" step="0.01"
+                    class="w-full px-3 py-2 border border-zinc-200 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:border-zinc-950 bg-white transition-all text-sm text-zinc-800 placeholder-zinc-400 font-semibold @error('discount_value') border-red-500 @enderror"
+                    placeholder="Contoh: 10000 atau 10">
+                @error('discount_value')
+                <p class="mt-1.5 text-xs text-red-500 font-medium">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+        
         <!-- Row 3: Image -->
         <div>
             <span class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Foto Layanan</span>

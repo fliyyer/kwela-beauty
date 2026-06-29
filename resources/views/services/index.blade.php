@@ -99,7 +99,17 @@
                     <div class="flex items-center justify-between border-t border-zinc-100 pt-4 mt-auto">
                         <div class="flex flex-col">
                             <span class="text-[9px] uppercase tracking-wider text-zinc-450 font-semibold">Investment</span>
-                            <span class="text-base font-bold text-zinc-950">{{ $service->formatted_price }}</span>
+                            @if($service->has_discount)
+                                <div class="flex items-baseline gap-1.5 mt-0.5">
+                                    <span class="text-base font-bold text-kwela-maroon">{{ $service->formatted_discounted_price }}</span>
+                                    <span class="text-xs text-zinc-400 line-through font-medium">{{ $service->formatted_original_price }}</span>
+                                </div>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-rose-50/70 text-rose-700 border border-rose-100/50 w-max mt-1">
+                                    {{ $service->discount_label }}
+                                </span>
+                            @else
+                                <span class="text-base font-bold text-zinc-950">{{ $service->formatted_price }}</span>
+                            @endif
                         </div>
                         <a href="{{ route('booking.create') }}" class="bg-kwela-maroon hover:bg-kwela-maroon/90 text-white px-4 py-2 rounded-md text-[11px] font-semibold tracking-wider uppercase shadow-sm transition-colors duration-200">
                             Book Now
